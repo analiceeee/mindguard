@@ -1,21 +1,41 @@
+# app/views.py
+
 from django.shortcuts import render
 from django.views import View
-from .models import Questionario, RecursoEducacional, DiarioEmocional
+from .models import Questionario, RecursoEducacional, DiarioEmocional, Pessoa, Pergunta, Resposta, Ocupacao, Encaminhamento
 
 class IndexView(View):
     def get(self, request, *args, **kwargs):
-        questionarios = Questionario.objects.all().order_by('-criado_em')[:5]
-        recursos = RecursoEducacional.objects.all()[:5]
-        diarios = DiarioEmocional.objects.all().order_by('-data')[:5]
+        return render(request, 'index.html')
 
-        context = {
-            'questionarios': questionarios,
-            'recursos': recursos,
-            'diarios': diarios,
-        }
+def pessoa_list(request):
+    pessoas = Pessoa.objects.select_related('ocupacao').all()
+    return render(request, 'pessoa.html', {'pessoas': pessoas})
 
-        return render(request, 'index.html', context)
+def ocupacao(request):
+    ocupacoes = Ocupacao.objects.all()
+    return render(request, "ocupacao.html", {'ocupacoes': ocupacoes})
 
-    def post(self, request):
-        # Por enquanto, não há formulário a tratar
-        pass
+def questionarios(request):
+    questionarios = Questionario.objects.prefetch_related('perguntas').all().order_by('-criado_em')
+    return render(request, "questionarios.html", {'questionarios': questionarios})
+
+def perguntas(request):
+    perguntas = Pergunta.objects.select_related('questionario').all()
+    return render(request, "perguntas.html", {'perguntas': perguntas})
+
+def respostas(request):
+    respostas = Resposta.objects.select_related('pessoa', 'pergunta__questionario').all().order_by('-data')
+    return render(request, "respostas.html", {'respostas': respostas})
+
+def diarioemocional(request):
+    diarios = DiarioEmocional.objects.select_related('pessoa').all().order_by('-data')
+    return render(request, "diarioemocional.html", {'diarios': diarios})
+
+def encaminhamento(request):
+    encaminhamentos = Encaminhamento.objects.select_related('pessoa', 'ocupacao').all().order_by('-data_encaminhamento')
+    return render(request, "encaminhamento.html", {'encaminhamentos': encaminhamentos})
+
+def recursoseducacionais(request):
+    recursos = RecursoEducacional.objects.all()
+    return render(request, "recursoseducacionais.html", {'recursos': recursos})

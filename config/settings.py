@@ -88,4 +88,4 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Linha importante para usar seu modelo customizado de usuário:
-AUTH_USER_MODEL = 'app.Usuario'
+AUTH_USER_MODEL = 'app.Pessoa'

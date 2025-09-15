@@ -1,0 +1,37 @@
+<!-- app/templates/respostas.html -->
+{% extends "base.html" %}
+
+{% block title %}Respostas - MindGuard{% endblock %}
+
+{% block content %}
+  <h2 class="mb-4"><i class="bi bi-chat-left-text"></i> Respostas dos Usuários</h2>
+
+  {% if respostas %}
+    <div class="list-group">
+      {% for r in respostas %}
+        <div class="list-group-item">
+          <div class="d-flex justify-content-between">
+            <strong>{{ r.pessoa.username }}</strong>
+            <small>{{ r.data|date:"d/m/Y H:i" }}</small>
+          </div>
+          <div class="mt-1">
+            <small class="text-muted">Questionário: {{ r.pergunta.questionario.nome }}</small>
+          </div>
+          <div class="mt-1">
+            <strong>Pergunta:</strong> {{ r.pergunta.texto }}
+          </div>
+          <div class="mt-1">
+            <strong>Resposta:</strong>
+            {% if r.resposta_texto %}
+              <p class="mb-0">"{{ r.resposta_texto }}"</p>
+            {% else %}
+              <em class="text-muted">— Não respondido —</em>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info">Nenhuma resposta registrada.</div>
+  {% endif %}
+{% endblock %}

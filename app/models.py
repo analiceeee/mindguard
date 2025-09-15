@@ -1,116 +1,79 @@
+# app/models.py
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-
-class Usuario(AbstractUser):  # herdando do User do Django
-    nome = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
-    tipo = models.CharField(max_length=12, choices=[('aluno', 'Aluno'), ('profissional', 'Profissional')])
+# RF02: Ocupação
+class Ocupacao(models.Model):
+    nome = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
         return self.nome
 
+# RF01: Pessoa
+class Pessoa(AbstractUser):
+    email = models.EmailField(unique=True)
+    ocupacao = models.ForeignKey(Ocupacao, on_delete=models.SET_NULL, null=True, blank=True)
 
-class Aluno(models.Model):
-    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE)
-    matricula = models.CharField(max_length=20)
-    curso = models.CharField(max_length=100)
-    turma = models.CharField(max_length=20)
-
-    def __str__(self):
-        return f'{self.usuario.nome} - {self.matricula}'
-
-
-class Profissional(models.Model):
-    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE)
-    especialidade = models.CharField(max_length=100)
+    REQUIRED_FIELDS = ['email']
 
     def __str__(self):
-        return f'{self.usuario.nome} - {self.especialidade}'
+        return f"{self.username} ({self.ocupacao or 'Sem ocupação'})"
 
-
+# RF04: Questionário
 class Questionario(models.Model):
-    nome = models.CharField(max_length=100)
-    descricao = models.TextField()
+    nome = models.CharField(max_length=255)
+    descricao = models.TextField(blank=True, null=True)  # RF04
     criado_em = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.nome
 
-
+# RF05: Pergunta
 class Pergunta(models.Model):
-    TIPOS = [
-        ('escala', 'Escala'),
-        ('texto', 'Texto Aberto'),
-    ]
-
-    questionario = models.ForeignKey(Questionario, on_delete=models.CASCADE)
-    texto = models.CharField(max_length=255)
-    tipo = models.CharField(max_length=20, choices=TIPOS)
+    questionario = models.ForeignKey(Questionario, on_delete=models.CASCADE, related_name='perguntas')
+    texto = models.CharField(max_length=500)
 
     def __str__(self):
         return self.texto
 
-
+# RF06: Resposta — vinculada à Pessoa
 class Resposta(models.Model):
-    aluno = models.ForeignKey(Aluno, on_delete=models.CASCADE)
+    pessoa = models.ForeignKey(Pessoa, on_delete=models.CASCADE)  # RF06
     pergunta = models.ForeignKey(Pergunta, on_delete=models.CASCADE)
+    resposta_texto = models.TextField(blank=True, null=True)
     data = models.DateTimeField(auto_now_add=True)
-    resposta_texto = models.TextField(null=True, blank=True)
-    resposta_numerica = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
-        if self.resposta_numerica is not None:
-            return f'{self.aluno.usuario.nome} - {self.pergunta.texto}: {self.resposta_numerica}'
-        return f'{self.aluno.usuario.nome} - {self.pergunta.texto}: {self.resposta_texto}'
+        return f"{self.pessoa.username} - {self.pergunta.texto}"
 
-
+# RF07: Diário Emocional — vinculado à Pessoa
 class DiarioEmocional(models.Model):
-    HUMORES = [
-        ('feliz', 'Feliz'),
-        ('triste', 'Triste'),
-        ('ansioso', 'Ansioso'),
-        ('calmo', 'Calmo'),
-        ('outro', 'Outro'),
-    ]
-
-    aluno = models.ForeignKey(Aluno, on_delete=models.CASCADE)
-    data = models.DateField(auto_now_add=True)
-    titulo = models.CharField(max_length=100)
-    conteudo = models.TextField()
-    humor = models.CharField(max_length=50, choices=HUMORES)
+    pessoa = models.ForeignKey(Pessoa, on_delete=models.CASCADE)  # RF07
+    titulo = models.CharField(max_length=255)
+    conteudo = models.TextField()  # RF07
+    humor = models.CharField(max_length=50)
+    data = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'{self.aluno.usuario.nome} - {self.titulo}'
+        return f"{self.titulo} - {self.pessoa.username}"
 
-
+# RF08: Encaminhamento
 class Encaminhamento(models.Model):
-    STATUS = [
-        ('pendente', 'Pendente'),
-        ('realizado', 'Realizado'),
-    ]
-
-    aluno = models.ForeignKey(Aluno, on_delete=models.CASCADE)
-    profissional = models.ForeignKey(Profissional, on_delete=models.CASCADE)
+    pessoa = models.ForeignKey(Pessoa, on_delete=models.CASCADE)  # RF08
+    ocupacao = models.ForeignKey(Ocupacao, on_delete=models.CASCADE)  # RF08
     motivo = models.TextField()
-    data_encaminhamento = models.DateField(auto_now_add=True)
-    status = models.CharField(max_length=20, choices=STATUS)
+    data_encaminhamento = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'Encaminhamento de {self.aluno.usuario.nome} para {self.profissional.usuario.nome} - {self.status}'
+        return f"Encaminhamento de {self.pessoa.username} para {self.ocupacao.nome}"
 
-
+# RF09: Recurso Educacional
 class RecursoEducacional(models.Model):
-    TIPOS = [
-        ('video', 'Vídeo'),
-        ('artigo', 'Artigo'),
-        ('podcast', 'Podcast'),
-    ]
-
-    titulo = models.CharField(max_length=100)
-    tipo = models.CharField(max_length=20, choices=TIPOS)
+    titulo = models.CharField(max_length=255)
+    descricao = models.TextField(blank=True, null=True)  # RF09
+    tipo = models.CharField(max_length=50)
     url = models.URLField()
-    descricao = models.TextField()
 
     def __str__(self):
         return self.titulo

@@ -1,0 +1,30 @@
+<!-- app/templates/diarioemocional.html -->
+{% extends "base.html" %}
+
+{% block title %}Diário Emocional - MindGuard{% endblock %}
+
+{% block content %}
+  <h2 class="mb-4"><i class="bi bi-journal-text"></i> Diários Emocionais</h2>
+
+  {% if diarios %}
+    <div class="row">
+      {% for d in diarios %}
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="card shadow-sm">
+            <div class="card-header bg-light">
+              <small>Usuário: <strong>{{ d.pessoa.username }}</strong></small>
+            </div>
+            <div class="card-body">
+              <h5 class="card-title">{{ d.titulo }}</h5>
+              <span class="badge bg-info mb-2">{{ d.humor }}</span>
+              <p class="card-text">{{ d.conteudo|truncatechars:100 }}</p>
+              <small class="text-muted">{{ d.data|date:"d/m/Y H:i" }}</small>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info">Nenhum diário registrado.</div>
+  {% endif %}
+{% endblock %}

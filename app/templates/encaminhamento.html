@@ -1,0 +1,29 @@
+<!-- app/templates/encaminhamento.html -->
+{% extends "base.html" %}
+
+{% block title %}Encaminhamentos - MindGuard{% endblock %}
+
+{% block content %}
+  <h2 class="mb-4"><i class="bi bi-arrow-repeat"></i> Encaminhamentos</h2>
+
+  {% if encaminhamentos %}
+    <div class="list-group">
+      {% for e in encaminhamentos %}
+        <div class="list-group-item">
+          <div class="d-flex justify-content-between">
+            <div>
+              <strong>{{ e.pessoa.username }}</strong> → <span class="badge bg-secondary">{{ e.ocupacao.nome }}</span>
+            </div>
+            <small>{{ e.data_encaminhamento|date:"d/m/Y H:i" }}</small>
+          </div>
+          <div class="mt-2">
+            <strong>Motivo:</strong>
+            <p class="mb-0">{{ e.motivo }}</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info">Nenhum encaminhamento registrado.</div>
+  {% endif %}
+{% endblock %}
